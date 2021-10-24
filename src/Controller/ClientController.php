@@ -23,7 +23,7 @@ class ClientController extends ApiController
     /**
     * @Route("/clients", methods="POST")
     */
-    public function create(Request $request, ClientRepository $clientRepository, EntityManagerInterface $em)
+    public function create(Request $request, ClientRepository $clientRepository, EntityManagerInterface $em, \Swift_Mailer $mailer)
     {
         
         //$request = Request::createFromGlobals();
@@ -73,6 +73,16 @@ class ClientController extends ApiController
         $client->setContent($request['content']);
         $em->persist($client);
         $em->flush();
+
+        $message = (new \Swift_Message('Form from contact page was sent'))
+        ->setFrom($request['email'])
+        ->setTo('thibi.mak@gmail.com')
+        ->setBody(
+            $request['content'],
+             'text/plain'
+        );
+
+        $mailer->send($message);
 
         //return $this->respond($request);
         return $this->respond($clientRepository->transform($client));
